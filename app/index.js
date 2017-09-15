@@ -9,6 +9,7 @@ let snakeHead = null;
 let snakeBody = [];
 let bodyPath = [];
 let food = null;
+let enemies = [];
 let keyboard;
 let directionX = 0;
 let directionY = 0;
@@ -16,6 +17,7 @@ const SPEED = 200;
 
 function preload() {
   game.load.image('body', 'assets/box.png');
+  game.load.image('enemy', 'assets/enemy.gif');
 }
 
 function create() {
@@ -24,6 +26,11 @@ function create() {
 
   addHead();
   addFood();
+  addEnemy();
+  addEnemy();
+  addEnemy();
+  addEnemy();
+  addEnemy();
   snakeBody.push();
   addBody();
   addBody();
@@ -35,9 +42,11 @@ function create() {
 
 function update() {
   moveSnake();
+  moveEnemies();
   handleKeyboard();
 
   game.physics.arcade.overlap(snakeHead, food, eat, null, this);
+  game.physics.arcade.overlap(snakeHead, enemies, hit, null, this);
 }
 
 function render() {
@@ -47,7 +56,7 @@ function render() {
 function moveSnake() {
   snakeHead.body.angularVelocity = 0;
   snakeHead.body.velocity.copyFrom(game.physics.arcade.velocityFromAngle(snakeHead.angle, SPEED));
-  checkBoundaries();
+  checkBoundaries(snakeHead);
 
   if (bodyPath.length > 0) {
     var part = bodyPath.pop();
@@ -71,21 +80,21 @@ function handleKeyboard() {
   }
 }
 
-function checkBoundaries() {
-  if (snakeHead.x > game.world.bounds.width) {
-    snakeHead.x = 0;
+function checkBoundaries(who) {
+  if (who.x > game.world.bounds.width) {
+    who.x = 0;
   }
 
-  if (snakeHead.x < 0) {
-    snakeHead.x = game.world.bounds.width;
+  if (who.x < 0) {
+    who.x = game.world.bounds.width;
   }
 
-  if (snakeHead.y > game.world.bounds.height) {
-    snakeHead.y = 0;
+  if (who.y > game.world.bounds.height) {
+    who.y = 0;
   }
 
-  if (snakeHead.y < 0) {
-    snakeHead.y = game.world.bounds.height;
+  if (who.y < 0) {
+    who.y = game.world.bounds.height;
   }
 }
 
@@ -110,6 +119,10 @@ function eat(head, food) {
   addBody();
 }
 
+function hit(head, enemy) {
+  //console.log('hit enemy');
+}
+
 function addFood() {
   food = game.add.sprite(Math.floor(Math.random() * 800), Math.floor(Math.random() * 600), 'body');
   food.anchor.setTo(0.5, 0.5);
@@ -119,4 +132,23 @@ function addFood() {
 function moveFood() {
   food.x = Math.floor(Math.random() * 800);
   food.y = Math.floor(Math.random() * 600);
+}
+
+function addEnemy() {
+  let enemy = game.add.sprite(Math.floor(Math.random() * 800), Math.floor(Math.random() * 600), 'enemy');
+  enemy.anchor.setTo(0.5, 0.5);
+  game.physics.enable(enemy, Phaser.Physics.ARCADE);
+  enemies.push(enemy);
+}
+
+function moveEnemies() {
+  for (var i = 0; i < enemies.length; i++) {
+    let move = game.rnd.integerInRange(0, 50);
+
+    if (move < 10) {
+      enemies[i].body.angularVelocity = game.rnd.integerInRange(-200, 200);
+    }
+    enemies[i].body.velocity.copyFrom(game.physics.arcade.velocityFromAngle(enemies[i].angle, SPEED));
+    checkBoundaries(enemies[i]);
+  }
 }
